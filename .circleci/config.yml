@@ -18,11 +18,11 @@ jobs:
     docker:
       - image: alpine/docker-with-buildx
     environment:
-      REBUILD: << pipeline.parameters.rebuild >>
+      # REBUILD: << pipeline.parameters.rebuild >>
+      REBUILD: "true"
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 18.09.3
+      - setup_remote_docker
       - run: |
           apk --no-cache --update add bash curl sudo jq
           # support GNU date
@@ -36,7 +36,7 @@ jobs:
     steps:
       - checkout
       - run: |
-          trivy image -s "HIGH,CRITICAL" alpine/terragrunt
+          trivy image -s "HIGH,CRITICAL" arichtman/terragrunt
 
 workflows:
   build:
@@ -48,7 +48,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - main
 
       - scan:
@@ -60,7 +59,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - main
 
   nightly:
@@ -70,7 +68,6 @@ workflows:
            filters:
              branches:
                only:
-                 - master
                  - main
     jobs:
       - build:
@@ -80,7 +77,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - main
       - scan:
           requires:
@@ -91,5 +87,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - main
