@@ -18,8 +18,7 @@ jobs:
     docker:
       - image: alpine/docker-with-buildx
     environment:
-      # REBUILD: << pipeline.parameters.rebuild >>
-      REBUILD: "true"
+      REBUILD: << pipeline.parameters.rebuild >>
     steps:
       - checkout
       - setup_remote_docker:
