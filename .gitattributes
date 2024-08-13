@@ -1,0 +1,4 @@
+
+*.lock binary
+.terraform.lock.hcl binary
+*.tfstate -diff
