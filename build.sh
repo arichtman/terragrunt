@@ -8,7 +8,7 @@
 
 # set -ex
 
-image="alpine/terragrunt"
+image="arichtman/terragrunt"
 terraform_repo="hashicorp/terraform"
 terragrunt_repo="gruntwork-io/terragrunt"
 boilerplate_repo="gruntwork-io/boilerplate"
@@ -42,15 +42,15 @@ function build_docker_image() {
   local boilerplate="${3}"
   local opentofu="${4}"
   local image_name="${5}"
-  
+
   # Create a new buildx builder instance
   docker buildx create --name mybuilder --use
-  
+
   # Build the Docker image for multiple platforms
-  if [[ "$CIRCLE_BRANCH" == "master" ]]; then 
+  if [[ "$CIRCLE_BRANCH" == "main" ]]; then
     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
     docker buildx build \
-     --platform "linux/386,linux/amd64,linux/arm64" \
+     --platform "linux/amd64,linux/arm64" \
      --build-arg TERRAFORM="${terraform}" \
      --build-arg TERRAGRUNT="${terragrunt}" \
      --build-arg BOILERPLATE="${boilerplate}" \
@@ -58,11 +58,21 @@ function build_docker_image() {
      --no-cache \
      --push \
      --tag "${image_name}:${terraform}" \
-     --tag "${image_name}:tf${terraform}" \
+     --tag "${image_name}:${terraform%.*}" \
+     --tag "${image_name}:${terraform%%.*}" \
+     --tag "${image_name}:tf-${terraform}" \
+     --tag "${image_name}:tf-${terraform%.*}" \
+     --tag "${image_name}:tf-${terraform%%.*}" \
+     --tag "${image_name}:tg-${terragrunt}" \
+     --tag "${image_name}:tg-${terragrunt%.*}" \
+     --tag "${image_name}:tg-${terragrunt%%.*}" \
+     --tag "${image_name}:otf-${opentofu}" \
+     --tag "${image_name}:otf-${opentofu%.*}" \
+     --tag "${image_name}:otf-${opentofu%%.*}" \
      --tag "${image_name}:latest" \
      .
   fi
-  
+
   # Remove the buildx builder instance
   docker buildx rm mybuilder
 }
