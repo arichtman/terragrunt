@@ -33,9 +33,8 @@
       in {
         devShell = with pkgs;
           mkShell {
-            buildInputs = [poetryEnv poetry skopeo];
+            buildInputs = [poetryEnv poetry skopeo hadolint trivy];
             shellHook = ''
-              export SKIP=check-renovate,check-github-actions,hadolint,copy-repeated-files
               pre-commit install --install-hooks
             '';
           };

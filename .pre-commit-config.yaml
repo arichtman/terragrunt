@@ -40,3 +40,17 @@ repos:
     args: [--autofix, --no-ensure-ascii, --no-sort-keys]
   - id: trailing-whitespace
     args: [--markdown-linebreak-ext=md]
+- repo: https://github.com/hadolint/hadolint
+  rev: v2.12.0
+  hooks:
+  - id: hadolint
+- repo: local
+  hooks:
+  - id: trivy
+    name: trivy
+    entry: trivy
+    language: system
+    pass_filenames: false
+    args:
+    - image
+    - arichtman/terragrunt

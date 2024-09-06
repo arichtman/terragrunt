@@ -48,7 +48,7 @@ function build_docker_image() {
 
   # Build the Docker image for multiple platforms
   if [[ "$CIRCLE_BRANCH" == "main" ]]; then
-    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
     docker buildx build \
      --platform "linux/amd64,linux/arm64" \
      --build-arg TERRAFORM="${terraform}" \
