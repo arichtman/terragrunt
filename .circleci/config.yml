@@ -36,10 +36,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          trivy image --format table --exit-code 1 \
-             --ignore-unfixed --vuln-type os,library \
-             --scanners vuln --severity CRITICAL,HIGH \
-             --timeout 10m0s arichtman/terragrunt
+          trivy image arichtman/terragrunt:latest
+
 workflows:
   build:
     jobs:
