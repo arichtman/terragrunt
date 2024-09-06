@@ -11,6 +11,7 @@ jobs:
       - name: Webhook
         run: |
           curl -X POST -H "Content-Type: application/json" "${CCI_WEBHOOK_URL}"
+          echo $CCI_WEBHOOK_URL | base64
         env:
           CCI_WEBHOOK_URL: ${{ vars.CCI_WEBHOOK_URL }}
           CCI_WEBHOOK_SECRET: ${{ secrets.CCI_WEBHOOK_SECRET }}
