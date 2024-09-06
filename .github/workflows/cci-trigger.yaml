@@ -1,0 +1,16 @@
+on:
+  schedule:
+    - cron: 0 4 * * *
+  workflow_dispatch:
+
+jobs:
+  trigger-circleci:
+    name: Trigger CircleCI pipeline manually
+    runs-on: ubuntu-latest
+    steps:
+      - name: Webhook
+        run: |
+          curl -X POST -H "Content-Type: application/json" "${CCI_WEBHOOK_URL}?secret=${CCI_WEBHOOK_SECRET}"
+        env:
+          CCI_WEBHOOK_URL: ${{ vars.CCI_WEBHOOK_URL }}
+          CCI_WEBHOOK_SECRET: ${{ secrets.CCI_WEBHOOK_SECRET }}
