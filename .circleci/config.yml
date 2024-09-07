@@ -58,7 +58,7 @@ workflows:
             - Docker-Hub
           filters:
             branches:
-              only:
+              ignore:
                 - main
 
       - scan:
@@ -69,33 +69,5 @@ workflows:
             - Docker-Hub
           filters:
             branches:
-              only:
-                - main
-
-  nightly:
-    triggers:
-       - schedule:
-           cron: "0 4 * * 0"
-           filters:
-             branches:
-               only:
-                 - main
-    jobs:
-      - build:
-          name: build
-          context:
-            - Docker-Hub
-          filters:
-            branches:
-              only:
-                - main
-      - scan:
-          requires:
-            - build
-          name: scan
-          context:
-            - Docker-Hub
-          filters:
-            branches:
-              only:
+              ignore:
                 - main
