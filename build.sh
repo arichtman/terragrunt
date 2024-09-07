@@ -4,9 +4,12 @@
 # Make sure you set secret environment variables in CI
 # DOCKER_USERNAME
 # DOCKER_PASSWORD
+# GitHub
 # API_TOKEN
 
 # set -ex
+
+[[ ! -z "${1}" ]] && PUSH_OPTION=' --push '
 
 image="arichtman/terragrunt"
 terraform_repo="hashicorp/terraform"
@@ -14,26 +17,20 @@ terragrunt_repo="gruntwork-io/terragrunt"
 boilerplate_repo="gruntwork-io/boilerplate"
 opentofu_repo="opentofu/opentofu"
 
-if [[ "${CI}" == "true" ]]; then
-  CURL="curl -sL -H \"Authorization: token ${API_TOKEN}\""
-else
-  CURL="curl -sL"
-fi
-
 function get_latest_release() {
-  ${CURL} -s "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name | ltrimstr("v")'
+  curl -fsL -H "Authorization: token ${API_TOKEN}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name | ltrimstr("v")'
 }
 
 function get_published_date() {
-  ${CURL} -s "https://api.github.com/repos/$1/releases/latest" | jq -r '.published_at'
+  curl -fsL -H "Authorization: token ${API_TOKEN}" "https://api.github.com/repos/$1/releases/latest" | jq -r '.published_at'
 }
 
 function get_image_published_date() {
-  ${CURL} -s "https://hub.docker.com/v2/repositories/$1/tags/" | jq -r '.results[] | select(.name == "latest") | .last_updated'
+  curl -fsL -u "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" "https://hub.docker.com/v2/repositories/$1/tags/" | jq -r '.results[] | select(.name == "latest") | .last_updated'
 }
 
 function get_image_tags() {
-  ${CURL} -s "https://hub.docker.com/v2/repositories/$1/tags/" | jq -r '.results[].name'
+  curl -fsL -u "${DOCKER_USERNAME}:${DOCKER_PASSWORD}" "https://hub.docker.com/v2/repositories/$1/tags/" | jq -r '.results[].name'
 }
 
 function build_docker_image() {
@@ -43,38 +40,39 @@ function build_docker_image() {
   local opentofu="${4}"
   local image_name="${5}"
 
-  # Create a new buildx builder instance
-  docker buildx create --name mybuilder --use
-
-  # Build the Docker image for multiple platforms
-  if [[ "$CIRCLE_BRANCH" == "main" ]]; then
-    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-    docker buildx build \
-     --platform "linux/amd64,linux/arm64" \
-     --build-arg TERRAFORM="${terraform}" \
-     --build-arg TERRAGRUNT="${terragrunt}" \
-     --build-arg BOILERPLATE="${boilerplate}" \
-     --build-arg OPENTOFU="${opentofu}" \
-     --no-cache \
-     --push \
-     --tag "${image_name}:${terraform}" \
-     --tag "${image_name}:${terraform%.*}" \
-     --tag "${image_name}:${terraform%%.*}" \
-     --tag "${image_name}:tf-${terraform}" \
-     --tag "${image_name}:tf-${terraform%.*}" \
-     --tag "${image_name}:tf-${terraform%%.*}" \
-     --tag "${image_name}:tg-${terragrunt}" \
-     --tag "${image_name}:tg-${terragrunt%.*}" \
-     --tag "${image_name}:tg-${terragrunt%%.*}" \
-     --tag "${image_name}:otf-${opentofu}" \
-     --tag "${image_name}:otf-${opentofu%.*}" \
-     --tag "${image_name}:otf-${opentofu%%.*}" \
-     --tag "${image_name}:latest" \
-     .
+  if [[ $(command -v "docker") ]]; then
+    CONTAINER_COMMAND=docker
+  else
+    echo "Did not find Docker, defaulting Podman"
+    CONTAINER_COMMAND=podman
   fi
 
-  # Remove the buildx builder instance
-  docker buildx rm mybuilder
+  # Build the Docker image for multiple platforms
+  echo $DOCKER_PASSWORD | $CONTAINER_COMMAND login -u $DOCKER_USERNAME --password-stdin
+  echo "Building..."
+  $CONTAINER_COMMAND buildx build \
+   --platform "linux/amd64,linux/arm64" \
+   --build-arg TERRAFORM="${terraform}" \
+   --build-arg TERRAGRUNT="${terragrunt}" \
+   --build-arg BOILERPLATE="${boilerplate}" \
+   --build-arg OPENTOFU="${opentofu}" \
+   --no-cache \
+   "${PUSH_OPTION}" \
+   --tag "${image_name}:${terraform}" \
+   --tag "${image_name}:${terraform%.*}" \
+   --tag "${image_name}:${terraform%%.*}" \
+   --tag "${image_name}:tf-${terraform}" \
+   --tag "${image_name}:tf-${terraform%.*}" \
+   --tag "${image_name}:tf-${terraform%%.*}" \
+   --tag "${image_name}:tg-${terragrunt}" \
+   --tag "${image_name}:tg-${terragrunt%.*}" \
+   --tag "${image_name}:tg-${terragrunt%%.*}" \
+   --tag "${image_name}:otf-${opentofu}" \
+   --tag "${image_name}:otf-${opentofu%.*}" \
+   --tag "${image_name}:otf-${opentofu%%.*}" \
+   --tag "${image_name}:latest" \
+   .
+
 }
 
 latest_terraform=$(get_latest_release "${terraform_repo}")

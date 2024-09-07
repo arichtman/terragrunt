@@ -39,7 +39,7 @@ jobs:
           # support GNU date
           apk add --update --no-cache coreutils
           echo $REBUILD
-          bash ./build.sh
+          bash ./build.sh push
 
   scan:
     docker:
