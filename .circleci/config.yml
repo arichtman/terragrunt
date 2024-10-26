@@ -44,7 +44,7 @@ jobs:
 
   scan:
     docker:
-      - image: alpine/trivy
+      - image: aquasec/trivy
     steps:
       - checkout
       - run: |

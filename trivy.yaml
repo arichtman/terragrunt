@@ -9,3 +9,5 @@ severity:
 timeout: 10m
 db:
   no-progress: true
+  repository:
+    - "public.ecr.aws/aquasecurity/trivy-db"
