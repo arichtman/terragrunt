@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set euo pipefail
 # Prerequisite
 # Make sure you set secret environment variables in CI
 # DOCKER_USERNAME
