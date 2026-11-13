@@ -27,15 +27,17 @@ jobs:
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v4
 
+      - name: Checkout code
+        uses: actions/checkout@v7
       # Step to fetch the latest curl version
       - name: Get latest tool versions
         id: curl-version
         run: |
-          # export CURL_OPTIONS="-sL -H \"Authorization: token ${{ secrets.API_KEY }}\""
+          # `functions.sh` that upstream downloads and sourced next inserts a `$CURL_OPTIONS` into the call arguments, which fails if an empty argument.
+          # Ref: https://github.com/curl/curl/issues/13966
+          export CI="true"
 
-          curl -H "Cache-Control: no-cache" -sL "https://raw.githubusercontent.com/alpine-docker/multi-arch-docker-images/stable/functions.sh" -o functions.sh
-          # curl -H "Cache-Control: no-cache" -sL "https://raw.githubusercontent.com/alpine-docker/multi-arch-docker-images/refs/heads/master/functions.sh" -o functions.sh
-          source functions.sh
+          source ./build.sh
 
           # get latest version
           terraform_repo="hashicorp/terraform"
@@ -96,14 +98,6 @@ jobs:
             TERRAGRUNT=${{ env.TERRAGRUNT }}
             OPENTOFU=${{ env.OPENTOFU }}
             BOILERPLATE=${{ env.BOILERPLATE }}
-
-      # - name: Checkout code
-      #   uses: actions/checkout@v2
-
-      # - name: check the platform in multi-arch images
-      #   run: |
-      #     echo ${{ steps.meta.outputs.tags }}
-      #     bash ./test.sh ${{ steps.meta.outputs.tags }}
 
       - name: set tags
         run: |
