@@ -8,6 +8,17 @@ ARG TERRAGRUNT
 ARG BOILERPLATE
 ARG OPENTOFU
 
+RUN case $(uname -m) in \
+    x86_64) ARCH=amd64; ;; \
+    armv7l) ARCH=arm; ;; \
+    aarch64) ARCH=arm64; ;; \
+    ppc64le) ARCH=ppc64le; ;; \
+    s390x) ARCH=s390x; ;; \
+    *) echo "un-supported arch, exit ..."; exit 1; ;; \
+    esac
+RUN echo "export ARCH=$ARCH" > /envfile
+RUN cat /envfile
+
 # Determine the target architecture using uname -m
 RUN case $(uname -m) in \
     x86_64) ARCH=amd64; ;; \
